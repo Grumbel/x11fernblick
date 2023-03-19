@@ -22,6 +22,8 @@
               substituteInPlace x11fernblick.sh \
                 --replace 'VNCVIEWER=vncviewer' \
                           'VNCVIEWER=${pkgs.tigervnc}/bin/vncviewer' \
+                --replace 'VNCPASSWD=vncpasswd' \
+                          'VNCPASSWD=${pkgs.tigervnc}/bin/vncpasswd' \
                 --replace 'SS=ss' \
                           'SS=${pkgs.iproute2}/bin/ss'
               mkdir -p $out/bin

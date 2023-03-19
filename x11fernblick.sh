@@ -2,6 +2,7 @@
 
 set -e
 
+VNCPASSWD=vncpasswd
 VNCVIEWER=vncviewer
 SS=ss
 
@@ -65,25 +66,36 @@ fi
 
 LOCALPORT=$(find_free_port)
 REMOTEPORT="${LOCALPORT}"
+VNCPASSWDFILE=$(mktemp)
+
+# generate random password
+VNCPASSWD_PASSWORD="$(tr -dc A-Za-z0-9 </dev/urandom | head -c12 | "${VNCPASSWD}" -f)"
+echo -n "${VNCPASSWD_PASSWORD}" > "${VNCPASSWDFILE}"
+VNCPASSWD_PASSWORD_BASE32="$(echo -n "${VNCPASSWD_PASSWORD}" | base32)"
 
 echo "Connecting to display ${REMOTEDISPLAY} on ${REMOTEHOST} via port ${LOCALPORT}..."
 
 ssh -L "${LOCALPORT}:localhost:${REMOTEPORT}" ${REMOTEHOST} \
-    "x11vnc -localhost \
+    "VNCPASSWDFILE=\$(mktemp);
+    echo -n \"${VNCPASSWD_PASSWORD_BASE32}\" | base32 -d > \${VNCPASSWDFILE};
+    x11vnc -localhost \
             -display ${REMOTEDISPLAY} \
             -ncache_cr \
             -noxdamage \
             -nowf -noscr \
             -rfbport ${REMOTEPORT} \
-            -rfbauth ~/.vnc/passwd" &
+            -rfbauth \"\${VNCPASSWDFILE}\";
+    rm -v \"\${VNCPASSWDFILE}\"" &
 SSHPID=$!
 
 wait_for_port "${LOCALPORT}"
 
 "$VNCVIEWER" \
-    -passwd ~/.vnc/passwd \
+    -passwd "${VNCPASSWDFILE}" \
     localhost:"${LOCALPORT}"
 
 wait $SSHPID
+
+rm -v "${VNCPASSWDFILE}"
 
 # EOF #
