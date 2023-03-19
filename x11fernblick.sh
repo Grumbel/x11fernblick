@@ -87,6 +87,7 @@ ssh -L "${LOCALPORT}:localhost:${REMOTEPORT}" ${REMOTEHOST} \
     "VNCPASSWDFILE=\$(mktemp);
     echo -n \"${VNCPASSWD_PASSWORD_BASE32}\" | base32 -d > \${VNCPASSWDFILE};
     x11vnc -localhost \
+           -timeout 5 \
             -display ${REMOTEDISPLAY} \
             -ncache_cr \
             -noxdamage \
