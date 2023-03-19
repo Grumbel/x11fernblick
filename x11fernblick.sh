@@ -25,12 +25,20 @@ wait_for_port() {
   done
 }
 
-unset REMOTEDISPLAY
-unset REMOTEHOST
-
 HELP_MSG="Usage: $0 USER@HOSTNAME [DISPLAY]
-Connect to a X11 server at HOSTNAME on DISPLAY (default :0)."
 
+Connect to a remote X11 server and show its desktop locally.
+
+  USER@HOSTNAME   A ssh destination to connect to
+  DISPLAY         Display to connect to (default :0)
+
+Options
+  -h, --help      Display this help"
+
+unset REMOTEHOST
+REMOTEDISPLAY=":0"
+
+REST=()
 while [[ $# -gt 0 ]]
 do
   key="$1"
@@ -41,27 +49,27 @@ do
       exit 0
       ;;
     *)
-      if [[ -z "${REMOTEHOST+x}" ]]; then
-        REMOTEHOST="$key"
-      elif [[ -z "${REMOTEDISPLAY+x}" ]]; then
-        REMOTEDISPLAY="$key"
-      else
-        echo "error: Too many arguments provided."
-        exit 1
-      fi
+      REST+=("$key")
       ;;
   esac
 
   shift
 done
 
-if [[ -z "$REMOTEHOST" ]]; then
-    echo "error: USER@HOSTNAME not provided."
-    exit 1
+if [[ ${#REST[@]} -eq 0 ]]; then
+  echo "$HELP_MSG"
+  exit 0
+elif [[ ${#REST[@]} -gt 2 ]]; then
+  echo "error: Too many arguments provided."
+  exit 1
 fi
 
-if [[ -z "$REMOTEDISPLAY" ]]; then
-    REMOTEDISPLAY=":0"
+if [[ ${#REST[@]} -ge 1 ]]; then
+  REMOTEHOST="${REST[0]}"
+fi
+
+if [[ ${#REST[@]} -ge 2 ]]; then
+  REMOTEDISPLAY="${REST[1]}"
 fi
 
 LOCALPORT=$(find_free_port)
