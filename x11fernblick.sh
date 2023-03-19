@@ -25,6 +25,13 @@ wait_for_port() {
   done
 }
 
+wait_for_remote_port() {
+  local REMOTE_HOST="$1"
+  local PORT_NUMBER="$2"
+
+  ssh "${REMOTE_HOST}" "while ! "${SS}" -nlt | grep -q ":${PORT_NUMBER} "; do echo \"waiting for port ${PORT}\"; sleep 1; done"
+}
+
 HELP_MSG="Usage: $0 USER@HOSTNAME [DISPLAY]
 
 Connect to a remote X11 server and show its desktop locally.
@@ -97,7 +104,7 @@ ssh -L "${LOCALPORT}:localhost:${REMOTEPORT}" ${REMOTEHOST} \
     rm -v \"\${VNCPASSWDFILE}\"" &
 SSHPID=$!
 
-wait_for_port "${LOCALPORT}"
+wait_for_remote_port "${REMOTEHOST}" "${REMOTEPORT}"
 
 "$VNCVIEWER" \
     -passwd "${VNCPASSWDFILE}" \
