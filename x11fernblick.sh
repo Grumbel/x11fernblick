@@ -29,7 +29,7 @@ wait_for_remote_port() {
   local REMOTE_HOST="$1"
   local PORT_NUMBER="$2"
 
-  ssh "${REMOTE_HOST}" "while ! "${SS}" -nlt | grep -q ":${PORT_NUMBER} "; do echo \"waiting for port ${PORT}\"; sleep 1; done"
+  ssh "${REMOTE_HOST}" "while ! ss -nlt | grep -q ":${PORT_NUMBER} "; do echo \"waiting for port ${PORT_NUMBER}\"; sleep 1; done"
 }
 
 HELP_MSG="Usage: $0 USER@HOSTNAME [DISPLAY]
